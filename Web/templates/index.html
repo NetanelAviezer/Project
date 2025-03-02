@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resume with Like and Comment</title>
   <style>
+    /* ----------------------------------
+       Base Page Layout & Container
+    ---------------------------------- */
+    @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
+
     body {
       font-family: sans-serif;
       background-color: #f4f4f4;
@@ -47,7 +52,9 @@
       margin-bottom: 10px;
     }
 
-    /* Like button: same size & color as .comment-submit */
+    /* ----------------------------------
+       Like Button (green + liquid fill on click)
+    ---------------------------------- */
     .like-button {
       background-color: #28a745;
       border: none;
@@ -66,26 +73,31 @@
       overflow: hidden;   /* For liquid fill effect */
     }
 
+    /* Hover effect for the Like button */
     .like-button:hover {
-      background-color: #218838;
+      box-shadow: 0 0 10px rgba(33, 136, 56, 0.5);
+      transform: scale(1.05);
     }
 
     /* Liquid fill effect triggered on click (turns red briefly) */
     .like-button.clicked {
       --p: 0%;
       --t: 0s;
-      background: linear-gradient(#e60026 0 0) 
-                  no-repeat calc(200% - var(--p, 0%)) 
+      background: linear-gradient(#e60026 0 0)
+                  no-repeat calc(200% - var(--p, 0%))
                   100% / 200% var(--p, 0.2em);
-      transition: 0.3s var(--t, 0s),
-                  background-position 0.3s calc(0.3s - var(--t, 0s));
+      transition: 0.6s var(--t, 0s),
+                  background-position 0.6s calc(0.6s - var(--t, 0s));
       color: #fff;
     }
     .like-button.clicked.fill {
       --p: 100%;
-      --t: 0.3s;
+      --t: 0.6s;
     }
 
+    /* ----------------------------------
+       Comment Submit Button
+    ---------------------------------- */
     .comment-submit {
       background-color: #28a745;
       border: none;
@@ -102,10 +114,16 @@
       transition: background-color 0.3s ease;
     }
 
+    /* Hover effect for the Submit button */
     .comment-submit:hover {
       background-color: #218838;
+      box-shadow: 0 0 10px rgba(33, 136, 56, 0.5);
+      transform: scale(1.05);
     }
 
+    /* ----------------------------------
+       Comment Form
+    ---------------------------------- */
     .comment-form {
       display: flex;
       align-items: center;
@@ -153,6 +171,41 @@
     .resume-section {
       margin-top: 40px;
     }
+
+    /* ----------------------------------
+       OPTIONAL: Additional .btn-styleX
+       snippet from your code (truncated for brevity)
+    ---------------------------------- */
+    :root {
+      --background: #fafbff;
+      --button-width: 120px;
+      --border-radius: 5px;
+    }
+    html {
+      font-family: "Fredoka One", cursive;
+      background-color: var(--background);
+    }
+    .click-btn {
+      display: flex;
+      width: var(--button-width);
+      height: 40px;
+      justify-content: center;
+      align-items: center;
+      margin: 0.5rem;
+      line-height: 35px;
+      border: 1px solid;
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-size: 16px;
+      color: #000;
+      text-decoration: none;
+      transition: all 0.35s;
+      box-sizing: border-box;
+    }
+    .buttons-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -164,7 +217,7 @@
       </div>
 
       <div class="buttons-container">
-        <!-- Like Button (green, same size as Submit, with click-triggered red liquid fill) -->
+        <!-- Like Button (green + liquid fill on click + hover effect) -->
         <button class="like-button" id="likeButton">
           ❤️ Like
         </button>
@@ -200,26 +253,23 @@
       // Like Button Functionality (Prevent Required Field Issue)
       const likeBtn = document.getElementById("likeButton");
       likeBtn.addEventListener("click", async function (event) {
-        event.preventDefault(); // Prevents required field issue
+        event.preventDefault();
         try {
           await fetch("/like", { method: "POST" });
         } catch (error) {
           console.error("Like request failed:", error);
         }
 
-        // Trigger red liquid fill on click
-        // Step 1: Add the .clicked class (initial state)
-        this.classList.add("clicked");
-        // Step 2: Force reflow (so transitions can restart)
-        void this.offsetWidth; 
-        // Step 3: Add the .fill class to animate to 100%
-        this.classList.add("fill");
+        // Trigger slower red liquid fill on click
+        this.classList.add("clicked");  // Initial state
+        void this.offsetWidth;           // Force reflow
+        this.classList.add("fill");      // Animate to 100%
 
-        // Remove classes after animation (0.6s is enough for the fill)
+        // Remove classes after 1.2 seconds so the fill is visible longer
         setTimeout(() => {
           this.classList.remove("fill");
           this.classList.remove("clicked");
-        }, 600);
+        }, 1200);
       });
 
       // Comment Submission (Temporary Display)
@@ -252,10 +302,10 @@
             commentList.prepend(newComment);
             commentInput.value = "";  // Clear input field
 
-            // Show comment briefly (disappear after 5 seconds)
+            // Remove the comment after 2 seconds
             setTimeout(() => {
               newComment.remove();
-            }, 5000);
+            }, 2000);
           } else {
             console.error("Error submitting comment:", data.error);
           }
