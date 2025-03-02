@@ -4,6 +4,9 @@ FROM python:3.9-slim
 # Set the working directory
 WORKDIR /app
 
+# Update package list and install curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies separately to leverage Docker layer caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
