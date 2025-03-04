@@ -68,10 +68,16 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
+variable "jenkins_public_key" {
+  description = "Public key for the Jenkins deployment key"
+  type        = string
+}
+
 resource "aws_key_pair" "jenkins_key" {
   key_name   = "jenkins-key"
-  public_key = file("~/.ssh/jenkins_deploy_key.pub")
+  public_key = var.jenkins_public_key
 }
+
 
 
 # EC2 instance to install Docker (using the default VPC)
