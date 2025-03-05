@@ -1,0 +1,84 @@
+pipeline {
+  agent any
+
+  // Use the ws option to set a custom workspace that persists between builds.
+  options {
+    ws('/var/jenkins_home/terraform-state')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        // Checkout the repository into the custom workspace.
+        git branch: 'master', url: 'https://github.com/NehorayHillel/flask_resume.git'
+      }
+    }
+
+    stage('Terraform Init') {
+      steps {
+        dir('terraform/project2') {
+          // Bind AWS credentials and the Jenkins public key.
+          withCredentials([
+            [
+              $class: 'AmazonWebServicesCredentialsBinding',
+              credentialsId: 'aws-acces-key',
+              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+            ],
+            string(credentialsId: 'jenkins-public-key', variable: 'PUBLIC_KEY')
+          ]) {
+            sh 'terraform init'
+          }
+        }
+      }
+    }
+
+    stage('Terraform Apply') {
+      steps {
+        dir('terraform/project2') {
+          withCredentials([
+            [
+              $class: 'AmazonWebServicesCredentialsBinding',
+              credentialsId: 'aws-acces-key',
+              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+            ],
+            string(credentialsId: 'jenkins-public-key', variable: 'PUBLIC_KEY')
+          ]) {
+            // Use single quotes inside the command to avoid nested quote issues.
+            sh 'terraform apply -var="jenkins_public_key=${PUBLIC_KEY}" -auto-approve'
+          }
+        }
+      }
+    }
+
+    stage('Terraform Destroy') {
+      steps {
+        // A dummy step for the destroy stage. Uncomment the below block to enable destruction.
+        echo "Terraform destroy stage not activated. Uncomment if needed."
+        /*
+        dir('terraform/project2') {
+          withCredentials([
+            [
+              $class: 'AmazonWebServicesCredentialsBinding',
+              credentialsId: 'aws-acces-key',
+              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+            ],
+            string(credentialsId: 'jenkins-public-key', variable: 'PUBLIC_KEY')
+          ]) {
+            sh 'terraform destroy -var="jenkins_public_key=${PUBLIC_KEY}" -auto-approve'
+          }
+        }
+        */
+      }
+    }
+  }
+
+  post {
+    always {
+      // Archive the Terraform state file so you have a backup.
+      archiveArtifacts artifacts: 'terraform/project2/terraform.tfstate', fingerprint: true
+    }
+  }
+}
