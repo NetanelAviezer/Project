@@ -6,6 +6,10 @@ provider "aws" {
 data "aws_vpc" "default" {
   default = true
 }
+variable "jenkins_public_key" {
+  description = "Public key for the Jenkins key pair"
+  type        = string
+}
 
 # Create a security group in the default VPC
 resource "aws_security_group" "neo_test_group" {
