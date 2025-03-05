@@ -7,18 +7,6 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# Variable to supply your Jenkins public key
-variable "jenkins_public_key" {
-  description = "Public key for the Jenkins key pair"
-  type        = string
-}
-
-# Create a key pair for Jenkins
-resource "aws_key_pair" "jenkins_key" {
-  key_name   = "jenkins-key"
-  public_key = var.jenkins_public_key
-}
-
 # Create a security group in the default VPC
 resource "aws_security_group" "neo_test_group" {
   name        = "neo-test-group"
@@ -48,6 +36,4 @@ output "security_group_id" {
   value = aws_security_group.neo_test_group.id
 }
 
-output "jenkins_key_name" {
-  value = aws_key_pair.jenkins_key.key_name
-}
+
